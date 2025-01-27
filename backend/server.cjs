@@ -1,15 +1,24 @@
-// server.cjs
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: ['https://habit-tracker-lcpk.vercel.app'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    },
+});
+
 app.use(express.json());
 app.use(cors({
-    origin: ['https://habit-tracker-lcpk.vercel.app'], // Allow your frontend domain
+    origin: ['https://habit-tracker-lcpk.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true, // Enable cookies if needed
+    credentials: true,
 }));
 
 // MongoDB Connection
@@ -28,11 +37,18 @@ const habitSchema = new mongoose.Schema({
 
 const Habit = mongoose.model('Habit', habitSchema);
 
+// Notify all clients when data changes
+const notifyClients = async () => {
+    const habits = await Habit.find().sort({ createdAt: -1 });
+    io.emit('updateHabits', habits);
+};
+
 // CRUD Endpoints
 app.post('/api/habits', async (req, res) => {
     try {
         const habit = new Habit(req.body);
         await habit.save();
+        await notifyClients();
         res.status(201).json(habit);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -51,6 +67,7 @@ app.get('/api/habits', async (req, res) => {
 app.put('/api/habits/:id', async (req, res) => {
     try {
         const updatedHabit = await Habit.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        await notifyClients();
         res.json(updatedHabit);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -60,11 +77,18 @@ app.put('/api/habits/:id', async (req, res) => {
 app.delete('/api/habits/:id', async (req, res) => {
     try {
         await Habit.findByIdAndDelete(req.params.id);
+        await notifyClients();
         res.json({ message: 'Habit deleted successfully' });
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
 });
 
+// Real-time updates
+io.on('connection', (socket) => {
+    console.log('🟢 A user connected');
+    socket.on('disconnect', () => console.log('🔴 A user disconnected'));
+});
+
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
