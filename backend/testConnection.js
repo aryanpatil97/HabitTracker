@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const uri = 'mongodb+srv://HabiTrackerAdmin:HabiTrackerPassword@cluster0.n7lu7.mongodb.net/habit-db2?retryWrites=true&w=majority&appName=Cluster0';
+const uri = 'mongodb+srv://<db_name>:<db_password>@cluster0.n7lu7.mongodb.net/habit-db2?retryWrites=true&w=majority&appName=Cluster0';
 
 mongoose.connect(uri)
     .then(() => {
