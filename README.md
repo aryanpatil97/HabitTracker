@@ -6,8 +6,8 @@ A full-stack habit tracking application with real-time updates and modern UI.
 [![MERN Stack](https://img.shields.io/badge/MERN-Full%20Stack-blue)](https://www.mongodb.com/mern-stack)
 [![React](https://img.shields.io/badge/React-18.2+-61DAFB?logo=react)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3+-06B6D4?logo=tailwind-css)](https://tailwindcss.com/)
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?logo=vercel)](FRONTEND_URL)
-[![Backend on Render](https://img.shields.io/badge/Backend%20on-Render-46E3B7?logo=render)](BACKEND_URL)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?logo=vercel)]([FRONTEND_URL](https://habitracker-deployed.vercel.app/))
+[![Backend on Render](https://img.shields.io/badge/Backend%20on-Render-46E3B7?logo=render)]([BACKEND_URL](https://habittracker-eywk.onrender.com))
 
 ## ✨ Features
 - Create, Read, Update, Delete habits
