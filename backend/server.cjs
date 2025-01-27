@@ -5,10 +5,14 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: ['https://habit-tracker-lcpk.vercel.app'], // Allow your frontend domain
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true, // Enable cookies if needed
+}));
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('🟢 MongoDB Connected'))
     .catch(err => console.error('🔴 MongoDB Connection Error:', err.message));
 
@@ -18,7 +22,7 @@ const habitSchema = new mongoose.Schema({
     category: { type: String, required: true },
     tags: [{ type: String }],
     isCompleted: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
 });
 
 const Habit = mongoose.model('Habit', habitSchema);

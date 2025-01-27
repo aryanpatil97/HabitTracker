@@ -14,8 +14,7 @@ function App() {
   const [filters, setFilters] = useState({ category: '', tag: '' });
   const [currentMotivation, setCurrentMotivation] = useState(0);
   const [typedText, setTypedText] = useState('');
-
-  const API_URL = 'http://localhost:5001/api/habits'; // Update this to your deployed API URL later
+  const API_URL = 'https://habittracker-eywk.onrender.com/api/habits'; // Deployed backend URL
   const motivations = [
     "Consistency builds character",
     "Small steps, big changes",
