@@ -2,26 +2,25 @@ import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { FiPlus, FiEdit, FiTrash, FiCheck, FiX, FiTag } from 'react-icons/fi';
 
-
 function App() {
   const [habits, setHabits] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     category: '',
     tags: '',
-    editingId: null
+    editingId: null,
   });
   const [filters, setFilters] = useState({ category: '', tag: '' });
   const [currentMotivation, setCurrentMotivation] = useState(0);
   const [typedText, setTypedText] = useState('');
-  const API_URL = 'https://habittracker-eywk.onrender.com/api/habits'; // Deployed backend URL
+  const API_URL = 'https://habittracker-eywk.onrender.com/api/habits'; // Backend URL
   const motivations = [
-    "Consistency builds character",
-    "Small steps, big changes",
-    "Progress over perfection",
-    "Every habit matters",
+    'Consistency builds character',
+    'Small steps, big changes',
+    'Progress over perfection',
+    'Every habit matters',
     "You're shaping your future",
-    "Routine creates freedom"
+    'Routine creates freedom',
   ];
 
   // Fetch habits
@@ -34,13 +33,17 @@ function App() {
     }
   };
 
-  useEffect(() => { fetchHabits(); }, []);
+  useEffect(() => {
+    fetchHabits();
+    const interval = setInterval(fetchHabits, 500); // Polling every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   // Typing effect for motivations
   useEffect(() => {
     let currentIndex = 0;
     let timeout;
-    
+
     const typeMessage = () => {
       if (currentIndex < motivations[currentMotivation].length) {
         setTypedText(motivations[currentMotivation].slice(0, currentIndex + 1));
@@ -66,7 +69,7 @@ function App() {
     try {
       const habitData = {
         ...formData,
-        tags: formData.tags.split(',').map(t => t.trim()).filter(t => t)
+        tags: formData.tags.split(',').map((t) => t.trim()).filter((t) => t),
       };
 
       if (formData.editingId) {
@@ -74,9 +77,9 @@ function App() {
       } else {
         await axios.post(API_URL, habitData);
       }
-      
-      await fetchHabits();
+
       setFormData({ name: '', category: '', tags: '', editingId: null });
+      fetchHabits();
     } catch (error) {
       console.error('Operation failed:', error);
     }
@@ -87,18 +90,22 @@ function App() {
     if (!window.confirm('Delete this habit permanently?')) return;
     try {
       await axios.delete(`${API_URL}/${id}`);
-      await fetchHabits();
-    } catch (error ) {
+      fetchHabits();
+    } catch (error) {
       console.error('Delete failed:', error);
     }
   };
 
   // Filtered habits
-  const filteredHabits = useMemo(() => 
-    habits.filter(h => 
-      (!filters.category || h.category === filters.category) &&
-      (!filters.tag || h.tags?.includes(filters.tag))
-    ), [habits, filters]);
+  const filteredHabits = useMemo(
+    () =>
+      habits.filter(
+        (h) =>
+          (!filters.category || h.category === filters.category) &&
+          (!filters.tag || h.tags?.includes(filters.tag))
+      ),
+    [habits, filters]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 text-gray-100">
@@ -109,7 +116,8 @@ function App() {
             HabiTracker
           </h1>
           <div className="text-sm text-teal-300/80 font-mono h-6">
-            {typedText}<span className="ml-1 animate-blink">|</span>
+            {typedText}
+            <span className="ml-1 animate-blink">|</span>
           </div>
         </header>
 
@@ -121,13 +129,13 @@ function App() {
               <div className="space-y-3">
                 <input
                   value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Habit name"
                   className="w-full px-4 py-3 bg-slate-700/30 rounded-lg border border-slate-600/50 focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 outline-none transition-all placeholder-slate-400"
                 />
                 <input
                   value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   placeholder="Category"
                   className="w-full px-4 py-3 bg-slate-700/30 rounded-lg border border-slate-600/50 focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 outline-none transition-all placeholder-slate-400"
                 />
@@ -135,7 +143,7 @@ function App() {
                   <FiTag className="absolute top-4 left-3 text-slate-400" />
                   <input
                     value={formData.tags}
-                    onChange={e => setFormData({ ...formData, tags: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                     placeholder="Tags (comma separated)"
                     className="w-full pl-10 pr-4 py-3 bg-slate-700/30 rounded-lg border border-slate-600/50 focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 outline-none transition-all placeholder-slate-400"
                   />
@@ -149,53 +157,33 @@ function App() {
                 {formData.editingId ? 'Update Habit' : 'Add Habit'}
               </button>
             </form>
-
-            {/* Filters */}
-            <div className="space-y-4">
-              <div className="relative">
-                <select
-                  value={filters.category}
-                  onChange={e => setFilters({ ...filters, category: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-700/30 rounded-lg border border-slate-600/50 focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 outline-none appearance-none"
-                >
-                  <option value="">All Categories</option>
-                  {[...new Set(habits.map(h => h.category))].map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                <FiTag className="absolute top-3 left-3 text-slate-400" />
-              </div>
-            </div>
           </div>
 
           {/* Habits Grid */}
           <div className="lg:col-span-3">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredHabits.map(habit => (
-                <div 
+              {filteredHabits.map((habit) => (
+                <div
                   key={habit._id}
-                  className="relative p-6 bg-slate-800/40 rounded-xl border border-slate-700 /50 hover:border-teal-400/20 transition-all"
+                  className="relative p-6 bg-slate-800/40 rounded-xl border border-slate-700/50 hover:border-teal-400/20 transition-all"
                 >
-                  <div className={`absolute top-4 right-4 p-2 rounded-lg ${
-                    habit.isCompleted 
-                      ? 'bg-teal-500/20 text-teal-400' 
-                      : 'bg-amber-500/20 text-amber-400'
-                  }`}>
+                  <div
+                    className={`absolute top-4 right-4 p-2 rounded-lg ${
+                      habit.isCompleted ? 'bg-teal-500/20 text-teal-400' : 'bg-amber-500/20 text-amber-400'
+                    }`}
+                  >
                     {habit.isCompleted ? <FiCheck /> : <FiX />}
                   </div>
-
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-teal-50">{habit.name}</h3>
-                    
                     <div className="flex items-center gap-2 text-indigo-300 text-sm">
                       <FiTag className="flex-shrink-0" />
                       <span>{habit.category}</span>
                     </div>
-
                     {habit.tags?.length > 0 && (
                       <div className="flex flex-wrap gap-2">
-                        {habit.tags.map(tag => (
-                          <span 
+                        {habit.tags.map((tag) => (
+                          <span
                             key={tag}
                             className="px-2.5 py-1 bg-indigo-500/20 text-indigo-300 rounded-md text-xs"
                           >
@@ -204,15 +192,16 @@ function App() {
                         ))}
                       </div>
                     )}
-
                     <div className="flex gap-2 mt-4">
                       <button
-                        onClick={() => setFormData({
-                          name: habit.name,
-                          category: habit.category,
-                          tags: habit.tags?.join(', ') || '',
-                          editingId: habit._id
-                        })}
+                        onClick={() =>
+                          setFormData({
+                            name: habit.name,
+                            category: habit.category,
+                            tags: habit.tags?.join(', ') || '',
+                            editingId: habit._id,
+                          })
+                        }
                         className="px-3 py-1.5 text-sm bg-slate-700/50 hover:bg-slate-600/50 rounded-lg flex items-center gap-1"
                       >
                         <FiEdit /> Edit
@@ -231,16 +220,6 @@ function App() {
           </div>
         </div>
       </div>
-
-      {/* Custom CSS */}
-      <style jsx>{`
-        @keyframes blink {
-          50% { opacity: 0; }
-        }
-        .animate-blink {
-          animation: blink 1s step-end infinite;
-        }
-      `}</style>
     </div>
   );
 }
